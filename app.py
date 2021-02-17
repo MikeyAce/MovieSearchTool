@@ -118,7 +118,7 @@ def tvresult():
 
         setti = []
 
-        """ Start scraping from telkku.com with BeautifulSoup. We are only interested
+        """ Start scraping from telkku.com with BeautifulSoup. We are interested
         in movies on public television. From page content, look for 'li' tags.
         """
         print("HAUN URL ON " + searchUrl)
