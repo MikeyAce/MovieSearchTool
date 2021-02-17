@@ -11,6 +11,7 @@ flask-wtf = "*"
 beautifulsoup4 = "*"
 flask-table = "*"
 gunicorn = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
