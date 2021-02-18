@@ -1,11 +1,7 @@
-from flask import Flask, render_template, flash, redirect, request
-from wtforms.validators import DataRequired, Length
-import requests
-import json
+from flask import Flask, render_template, flash, request
+import requests, json, time, datetime
 from pony.orm import *
 from bs4 import BeautifulSoup
-from flask import Markup
-import time, datetime
 import os
 from dotenv import load_dotenv
 
@@ -88,96 +84,107 @@ def find_movie_from_api(imdb_id):
 def index():
         return render_template('index.html')
 
-@app.route('/submit_review', methods=['GET', 'POST'])
+@app.route('/submit_review', methods=['POST'])
 def submit_review():
 
         """ Save review and reviewer's name to database """
-        if request.method == 'POST':
-            
-            reviewer = request.form.get('reviewer')
-            review = request.form.get('review')
-            name = request.form.get('name')
-            fi_name = request.form.get('fi_name')
-            imdb_id = request.form.get('imdb_id')
-            year = request.form.get('year')
-            timestamp = request.form.get('timestamp')
+                   
+        reviewer = request.form.get('reviewer')
+        review = request.form.get('review')
+        name = request.form.get('name')
+        fi_name = request.form.get('fi_name')
+        imdb_id = request.form.get('imdb_id')
+        year = request.form.get('year')
+        timestamp = request.form.get('timestamp')
  
-            save_movie(name, fi_name, imdb_id, year, reviewer, review, timestamp)
+        save_movie(name, fi_name, imdb_id, year, reviewer, review, timestamp)
 
-            return "Thank you. Your review was saved!"            
+        return "Thank you. Your review was saved!"            
 
 @app.route('/tvresult', methods=['GET', 'POST'])
 def tvresult():
        
-        # 16/02/2021, tässä muodossa tulee pvm!
-        # Muunnetaan tähän muotoon: 2021-01-28
         """ Find data about upcoming movies on tv """
         selected_date = request.args.get('selected_date')
         actor = request.args.get('actor')
         genre = request.args.get('genre')
-        print("MIKÄ PÄIVÄ ")
-        print(selected_date)
+        days = request.args.get('days')
+        selectedDate = datetime.datetime.strptime(selected_date, '%Y-%m-%d')
+        
+        dates = set()
+        dates.add(selected_date)
 
-        #(dd, mm, yy) = selected_date.split("/")
-        #print("VUOSI JNE " + dd + " " + mm + " " + yy)
-        searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + selected_date + "/peruskanavat/koko-paiva"
-        #searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + yy + "-" + mm + "-" + dd + "/peruskanavat/koko-paiva"
+        """ Collect dates for searching """
+        for x in range(int(days)):
+            nextDay = selectedDate + datetime.timedelta(days=1)
+            nextDayFormatted = nextDay.strftime ('%Y-%m-%d')
+            dates.add(nextDayFormatted)
+
+        """ Loop through dates  """
         movies = []
+        for x in dates:
 
-        """ Start scraping from telkku.com with BeautifulSoup. We are interested
-        in movies on public television. From page content, look for 'li' tags.
-        """
-        print("HAUN URL ON " + searchUrl)
-        page = requests.get(searchUrl)
-        soup = BeautifulSoup(page.content, 'html.parser')
+            searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + x + "/peruskanavat/koko-paiva"
+            #searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + selected_date + "/peruskanavat/koko-paiva"
+            #searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + yy + "-" + mm + "-" + dd + "/peruskanavat/koko-paiva"
+        
+            """ Gather data from telkku.com with BeautifulSoup. We are interested
+            in movies on public television. From page content, look for 'li' tags.
+            """
 
-        programs = soup.find_all('li')
+            page = requests.get(searchUrl)
+            soup = BeautifulSoup(page.content, 'html.parser')
 
-        for a in programs:
+            programs = soup.find_all('li')
+
+            """ Loop through tv programs data for current date """
+            for y in programs:
                
-            """ Movies have the class tag publication__imdb-link. Other data is skipped. """
+                """ Movies have the class tag publication__imdb-link. Other data is skipped. """
 
-            imdb_link_cl = a.find(class_="publication__imdb-link")
-            if imdb_link_cl is None:
-                continue
+                imdb_link_cl = y.find(class_="publication__imdb-link")
+                if imdb_link_cl is None:
+                    continue
 
-            movie_title = a.get("title")    
+                movie_title = y.get("title")    
         
-            if movie_title is None:
-                continue     
+                if movie_title is None:
+                    continue     
     
-            imdb_link = imdb_link_cl.get('href')
-            showdatetime = a.find('time').get("datetime")
-            (sdate_tmp, stime_tmp) = showdatetime.split("T")
-            showdate = sdate_tmp[8:10]+"."+sdate_tmp[5:7]+"."+sdate_tmp[0:4]
-            showtime = stime_tmp[0:5]
-            imdb_temp = imdb_link.split("/")
-            imdb_id = imdb_temp[len(imdb_temp) - 2]
-            channel_cl = a.find(class_="publication__title")
-            channel_name_href = channel_cl.get("href")
-            channel = get_channel_name(channel_name_href)
+                imdb_link = imdb_link_cl.get('href')
+                showdatetime = y.find('time').get("datetime")
+                (sdate_tmp, stime_tmp) = showdatetime.split("T")
+                showdate = sdate_tmp[8:10]+"."+sdate_tmp[5:7]+"."+sdate_tmp[0:4]
+                showtime = stime_tmp[0:5]
+                imdb_temp = imdb_link.split("/")
+                imdb_id = imdb_temp[len(imdb_temp) - 2]
+                channel_cl = y.find(class_="publication__title")
+                channel_name_href = channel_cl.get("href")
+                channel = get_channel_name(channel_name_href)
         
-            movie_data = find_movie_from_api(imdb_id)
+                movie_data = find_movie_from_api(imdb_id)
             
-            if actor:
-                actors = movie_data['Actors']
-                if not actor in actors:
-                    continue
+                if actor:
+                    actors = movie_data['Actors']
+                    if not actor in actors:
+                        continue
   
-            if not genre is None and not "Any" in genre:
-                genres = movie_data['Genre']
-                if not genre in genres:
-                    continue
+                if not genre is None and not "Any" in genre:
+                    genres = movie_data['Genre']
+                    if not genre in genres:
+                        continue
 
-            reviews = find_reviews(imdb_id)
+                reviews = find_reviews(imdb_id)
             
-            film = {"showtime": showtime, "fi_name": movie_title, "reviews": reviews,
-                    "channel": channel, "showdate": showdate, "imdb_id": imdb_id, "img": movie_data['Poster'],
-                    "name": movie_data['Title'], "year": movie_data['Year'], "country": movie_data['Country'],
-                    "director": movie_data['Director'], "actors": movie_data['Actors'], "genre": movie_data['Genre'],
-                    "rated": movie_data['Rated'], "runtime": movie_data['Runtime']}
+                film = {"showtime": showtime, "fi_name": movie_title, "reviews": reviews,
+                        "channel": channel, "showdate": showdate, "imdb_id": imdb_id,
+                        "img": movie_data['Poster'], "name": movie_data['Title'],
+                        "year": movie_data['Year'], "country": movie_data['Country'],
+                        "director": movie_data['Director'], "actors": movie_data['Actors'],
+                        "genre": movie_data['Genre'], "rated": movie_data['Rated'],
+                        "runtime": movie_data['Runtime']}
             
-            movies.append(film)
+                movies.append(film)
 
         return render_template("results.html", movies=movies)
 

@@ -1,6 +1,6 @@
 # About
 
-My demo application for Code BootCamp 2021.
+My demo application for Code BootCamp 2021. It is a web search engine for upcoming movies on tv.
 
 This application uses following libraries:
 
@@ -13,7 +13,11 @@ Application can be easily deployed to Heroku or DigitalOcean. Have been tested o
 
 # Config file
 
-Make sure to create .env file in your project root (see .env_example) which contains your personal API KEY for accessing api data. The SQLite database file is created automatically.
+Make sure to create .env file in your project root (see .env_example) which contains your personal API KEY for accessing api data.
+
+# Database
+
+At the moment the application is only compatible with SQLite databases. If no database file exists, it is created automatically when running application.
 
 # Running application
 

@@ -20,10 +20,19 @@
         {% block content %}
 
         <form action="/tvresult" style="margin-bottom:5px;" method="GET">
-            DATE:
+            <label for="date">DATE:</label>
             <!-- <input type="text" id="selected_date" name="selected_date"> -->
             <input type="text" id="selected_date" name="selected_date" placeholder="YYYY-MM-DD">
+    
             <input type="submit" id="etsi" value="SEARCH">
+            <label style="font-size:8px">FOR</label>
+            <input type="radio" id="days1" name="days" value="1" checked="checked">
+            <label style="font-size:7px" for="days1">1</label>
+            <input type="radio" id="days2" name="days" value="2">
+            <label style="font-size:7px" for="days2">2</label> 
+            <input type="radio" id="days3" name="days" value="3">
+            <label style="font-size:7px" for="days3">3</label>
+            <label style="font-size:8px">DAYS</label>
             
             <label for="genre">GENRE:</label>
             <select name="genre" id="genre">
@@ -37,8 +46,9 @@
               <option value="Thriller">Thriller</option>
             </select>
 
-            ACTORS:
+            <label for="actor">ACTOR:</label>
             <input type="text" id="actor" name="actor">
+             
         </form>
     </div>
     <div id="app"></div>
