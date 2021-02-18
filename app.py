@@ -109,10 +109,13 @@ def tvresult():
         actor = request.args.get('actor')
         genre = request.args.get('genre')
         days = request.args.get('days')
-        #selectedDate = datetime.datetime.strptime(selected_date, '%Y-%m-%d')
-        selectedDate = datetime.datetime.strptime(selected_date, '%d.%m.%Y')
-        selectedDateFormatted = selectedDate.strftime ('%Y-%m-%d')    
-
+        
+        if not selected_date:
+            selectedDateFormatted = datetime.datetime.today().strftime('%Y-%m-%d')
+        else:
+            selectedDate = datetime.datetime.strptime(selected_date, '%d.%m.%Y')
+            selectedDateFormatted = selectedDate.strftime('%Y-%m-%d')
+            
         dates = set()
         dates.add(selectedDateFormatted)
         #dates.add(selected_date)
