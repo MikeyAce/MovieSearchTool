@@ -1,14 +1,14 @@
-$(document).ready(function () {
-	$( function() {
-		$( "#selected_date" ).datepicker();
+//$(document).ready(function () {
+//	$( function() {
+//		$( "#selected_date" ).datepicker();
 		// 02/02/2021
-		var now = new Date();
-		var day = ("0" + now.getDate()).slice(-2);
-		var month = ("0" + (now.getMonth() + 1)).slice(-2);
-		var today = (day)+"/"+(month)+"/"+now.getFullYear();  
-		$('#selected_date').val(today);
-	} );    
-});
+//		var now = new Date();
+//		var day = ("0" + now.getDate()).slice(-2);
+//		var month = ("0" + (now.getMonth() + 1)).slice(-2);
+//		var today = (day)+"/"+(month)+"/"+now.getFullYear();  
+//		$('#selected_date').val(today);
+//	} );    
+//});
 $(document).ready(function(){
 	$(".review_button").click(function () {
 

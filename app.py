@@ -37,6 +37,7 @@ db.generate_mapping(create_tables=True)
 @db_session
 def find_reviews(imdb_id):
         
+        """ Find reviews for this movie from database, if there are any """
         film = Movie.get(imdb_id=imdb_id)
         reviews = []
 
@@ -51,6 +52,7 @@ def find_reviews(imdb_id):
 @db_session
 def save_movie(name, fi_name, imdb_id, year, reviewer, review_txt, timestamp):
         
+        """ Save review of this movie to database """
         movie_rec = Movie.get(imdb_id=imdb_id)
         
         if not movie_rec:
@@ -75,6 +77,7 @@ def save_movie(name, fi_name, imdb_id, year, reviewer, review_txt, timestamp):
 
 def find_movie_from_api(imdb_id):
         
+        """ Fetch movie data in json format by imbd from omdbapi  """
         url = "http://www.omdbapi.com/?i=" + imdb_id + "&apikey="  + API_KEY
         response = requests.request("GET", url)
         data = json.loads(response.text)
@@ -88,6 +91,7 @@ def index():
 @app.route('/submit_review', methods=['GET', 'POST'])
 def submit_review():
 
+        """ Save review and reviewer's name to database """
         if request.method == 'POST':
             
             reviewer = request.form.get('reviewer')
@@ -107,16 +111,18 @@ def tvresult():
        
         # 16/02/2021, tässä muodossa tulee pvm!
         # Muunnetaan tähän muotoon: 2021-01-28
-
+        """ Find data about upcoming movies on tv """
         selected_date = request.args.get('selected_date')
         actor = request.args.get('actor')
         genre = request.args.get('genre')
-        print("MIKÄ PÄIVÄ " + selected_date)
+        print("MIKÄ PÄIVÄ ")
+        print(selected_date)
 
-        (dd,mm,yy) = selected_date.split("/")
-        searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + yy + "-" + mm + "-" + dd + "/peruskanavat/koko-paiva"
-
-        setti = []
+        #(dd, mm, yy) = selected_date.split("/")
+        #print("VUOSI JNE " + dd + " " + mm + " " + yy)
+        searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + selected_date + "/peruskanavat/koko-paiva"
+        #searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + yy + "-" + mm + "-" + dd + "/peruskanavat/koko-paiva"
+        movies = []
 
         """ Start scraping from telkku.com with BeautifulSoup. We are interested
         in movies on public television. From page content, look for 'li' tags.
@@ -129,7 +135,8 @@ def tvresult():
 
         for a in programs:
                
-            """ Find movies """
+            """ Movies have the class tag publication__imdb-link. Other data is skipped. """
+
             imdb_link_cl = a.find(class_="publication__imdb-link")
             if imdb_link_cl is None:
                 continue
@@ -161,7 +168,7 @@ def tvresult():
                 genres = movie_data['Genre']
                 if not genre in genres:
                     continue
-            
+
             reviews = find_reviews(imdb_id)
             
             film = {"showtime": showtime, "fi_name": movie_title, "reviews": reviews,
@@ -170,9 +177,9 @@ def tvresult():
                     "director": movie_data['Director'], "actors": movie_data['Actors'], "genre": movie_data['Genre'],
                     "rated": movie_data['Rated'], "runtime": movie_data['Runtime']}
             
-            setti.append(film)
+            movies.append(film)
 
-        return render_template("results.html", setti=setti)
+        return render_template("results.html", movies=movies)
 
 def get_channel_name(href_str):
         
