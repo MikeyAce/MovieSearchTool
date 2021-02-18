@@ -114,20 +114,19 @@ def tvresult():
         dates = set()
         dates.add(selected_date)
 
-        """ Collect dates for searching """
-        for x in range(int(days)):
-            nextDay = selectedDate + datetime.timedelta(days=1)
-            nextDayFormatted = nextDay.strftime ('%Y-%m-%d')
-            dates.add(nextDayFormatted)
+        if int(days) > 1:      
+            """ Collect dates for searching """
+            for x in range(int(days)):
+                nextDay = selectedDate + datetime.timedelta(days=1)
+                nextDayFormatted = nextDay.strftime ('%Y-%m-%d')
+                dates.add(nextDayFormatted)
 
         """ Loop through dates  """
         movies = []
         for x in dates:
 
             searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + x + "/peruskanavat/koko-paiva"
-            #searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + selected_date + "/peruskanavat/koko-paiva"
-            #searchUrl = "https://www.iltalehti.fi/telkku/tv-ohjelmat/" + yy + "-" + mm + "-" + dd + "/peruskanavat/koko-paiva"
-        
+                  
             """ Gather data from telkku.com with BeautifulSoup. We are interested
             in movies on public television. From page content, look for 'li' tags.
             """
