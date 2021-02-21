@@ -18,6 +18,19 @@ movieData.sort((a, b) => {
 	return a.showdate > b.showdate ? 1 : 0
 })
 
+// KOKEILE ASETTAA ARVO!
+//$('input[id$=selected_date]')[0].value="24.02.2021"
+$('input[id$=selected_date]')[0].value=movieData[0].showdate;
+/// TOIMII: $( function() {
+///        $( "#selected_date").datepicker();
+///      } );
+$(function () {
+        $('input[id$=selected_date]').datepicker({
+        dateFormat: 'dd.mm.yy'
+    });
+});
+
+
 // Loop through received data
 for (i = 0; i < movieData.length; i++) 
 {		

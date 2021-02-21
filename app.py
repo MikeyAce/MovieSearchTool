@@ -82,7 +82,9 @@ def find_movie_from_api(imdb_id):
 
 @app.route('/')
 def index():
-        return render_template('index.html')
+        ##return render_template('index.html')
+        todayFormatted = datetime.datetime.today().strftime('%d.%m.%Y')
+        return render_template('index.html',todayFormatted=todayFormatted)
 
 @app.route('/submit_review', methods=['POST'])
 def submit_review():
@@ -122,7 +124,7 @@ def tvresult():
 
         if int(days) > 1:      
             """ Collect dates for searching """
-            for x in range(int(days)):
+            for x in range(int(days)+1):
                 nextDay = selectedDate + datetime.timedelta(days=1)
                 nextDayFormatted = nextDay.strftime ('%Y-%m-%d')
                 dates.add(nextDayFormatted)
@@ -191,6 +193,9 @@ def tvresult():
             
                 movies.append(film)
 
+        #return render_template("results.html", movies=movies)
+        print("SIIS ONKO MEILLÄ MITÄÄN?")
+        print(movies)
         return render_template("results.html", movies=movies)
 
 def get_channel_name(href_str):

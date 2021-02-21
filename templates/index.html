@@ -9,20 +9,38 @@
     
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <!-- Datepickeriä varten nämä kaksi -->
+    <!-- Datepickeriä varten nämä kaksi
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> 
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
+
+    <!-- MULTIPICKER... TUO EKA RIVI, SIITÄ YLEMPÄNÄ UUDEMPI VERSIO... -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> -->
+    <link href="https://code.jquery.com/ui/1.12.1/themes/pepper-grinder/jquery-ui.css" rel="stylesheet" />
+    <link href="https://cdn.rawgit.com/dubrox/Multiple-Dates-Picker-for-jQuery-UI/master/jquery-ui.multidatespicker.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.rawgit.com/dubrox/Multiple-Dates-Picker-for-jQuery-UI/master/jquery-ui.multidatespicker.js"></script>
+    <!-- END MULTIPICKER-->
     <script src="/static/js/movies.js"></script>
+    <script>
+        //$('#mdp-demo').multiDatesPicker({
+    //numberOfMonths: [1, 2],
+    //altField: '#altField',
+    //minDate: 2,
+    //onSelect: function(){
+    //  $('#selected_date').val($('#mdp-demo').multiDatesPicker('getDates').length);
+   // }
+  //});
+    </script>
     {% endblock %}
 </head>
 <body>
     <div class="container" style="margin-top:1px;margin-bottom:1px;"></div>
         {% block content %}
-
+        <div id="mdp-demo"></div>
         <form action="/tvresult" style="margin-bottom:5px;" method="GET">
             <label for="date">DATE:</label>
             <!-- <input type="text" id="selected_date" name="selected_date"> -->
-            <input type="text" id="selected_date" name="selected_date" placeholder="DD.MM.YYYY">
+            <input type="text" id="selected_date" name="selected_date">
     
             <input type="submit" id="etsi" value="SEARCH">
             <label style="font-size:8px">FOR</label>
@@ -47,10 +65,32 @@
             </select>
 
             <label for="actor">ACTOR:</label>
-            <input type="text" id="actor" name="actor">
-             
+            <input type="text" id="actor" name="actor"> 
         </form>
     </div>
     <div id="app"></div>
     {% endblock %} 
+    <!--<script>$('#mdp-demo').multiDatesPicker({
+        numberOfMonths: [1, 2],
+        altField: '#altField',
+        minDate: 2,
+        onSelect: function(){
+          $('#selected_date').val($('#mdp-demo').multiDatesPicker('getDates').length);
+        }
+      });</script> -->
+    <script>
+      console.log("SAATIINKO TODAY")
+      console.log('{{todayFormatted}}')
+      //$('input[id$=selected_date]')[0].value=movieData[0].showdate;
+      $('input[id$=selected_date]')[0].value='{{todayFormatted}}'
+    // TOIMIVA, VAIN FORMAT VOIS OLLA PAREMPI:    
+    //$( function() {
+     //   $( "#selected_date").datepicker();
+     // } );
+     $(document).ready(function () {
+        $('input[id$=selected_date]').datepicker({
+        dateFormat: 'dd.mm.yy'
+    });
+    });
+    </script>   
 </body>
