@@ -84,7 +84,8 @@ def find_movie_from_api(imdb_id):
 def index():
         ##return render_template('index.html')
         todayFormatted = datetime.datetime.today().strftime('%d.%m.%Y')
-        return render_template('index.html',todayFormatted=todayFormatted)
+        #return render_template('index3.html',todayFormatted=todayFormatted)
+        return render_template('index.html',dateFrom=todayFormatted, dateTo=todayFormatted)
 
 @app.route('/submit_review', methods=['POST'])
 def submit_review():
@@ -108,26 +109,33 @@ def tvresult():
        
         """ Find data about upcoming movies on tv """
         selected_date = request.args.get('selected_date')
+        selected_date2 = request.args.get('selected_date2')
         actor = request.args.get('actor')
         genre = request.args.get('genre')
-        days = request.args.get('days')
+        ##days = request.args.get('days')
         
         if not selected_date:
             selectedDateFormatted = datetime.datetime.today().strftime('%Y-%m-%d')
         else:
             selectedDate = datetime.datetime.strptime(selected_date, '%d.%m.%Y')
             selectedDateFormatted = selectedDate.strftime('%Y-%m-%d')
+            selectedDate2 = datetime.datetime.strptime(selected_date2, '%d.%m.%Y')
+            selectedDate2Formatted = selectedDate2.strftime('%Y-%m-%d')
             
         dates = set()
         dates.add(selectedDateFormatted)
         #dates.add(selected_date)
 
-        if int(days) > 1:      
-            """ Collect dates for searching """
-            for x in range(int(days)+1):
-                nextDay = selectedDate + datetime.timedelta(days=1)
-                nextDayFormatted = nextDay.strftime ('%Y-%m-%d')
-                dates.add(nextDayFormatted)
+        """ Collect dates for searching """
+
+        nextDateFormatted = selectedDateFormatted
+        x = 1
+
+        while nextDateFormatted < selectedDate2Formatted:
+            nextDate = selectedDate + datetime.timedelta(days=x)
+            nextDateFormatted = nextDate.strftime ('%Y-%m-%d')
+            dates.add(nextDateFormatted)
+            x += 1
 
         """ Loop through dates  """
         movies = []
@@ -161,13 +169,19 @@ def tvresult():
                 imdb_link = imdb_link_cl.get('href')
                 showdatetime = y.find('time').get("datetime")
                 (sdate_tmp, stime_tmp) = showdatetime.split("T")
-                showdate = sdate_tmp[8:10]+"."+sdate_tmp[5:7]+"."+sdate_tmp[0:4]
+                showdate = sdate_tmp[8:10] + "." + sdate_tmp[5:7] + "." + sdate_tmp[0:4]
+
+                if showdate > selected_date2:
+                    continue
+
                 showtime = stime_tmp[0:5]
                 imdb_temp = imdb_link.split("/")
                 imdb_id = imdb_temp[len(imdb_temp) - 2]
                 channel_cl = y.find(class_="publication__title")
                 channel_name_href = channel_cl.get("href")
                 channel = get_channel_name(channel_name_href)
+                if channel == "Not found":
+                    continue
         
                 movie_data = find_movie_from_api(imdb_id)
             
@@ -190,13 +204,13 @@ def tvresult():
                         "director": movie_data['Director'], "actors": movie_data['Actors'],
                         "genre": movie_data['Genre'], "rated": movie_data['Rated'],
                         "runtime": movie_data['Runtime']}
-            
-                movies.append(film)
+                
+                if film not in movies:
+                    movies.append(film)
 
         #return render_template("results.html", movies=movies)
-        print("SIIS ONKO MEILLÄ MITÄÄN?")
-        print(movies)
-        return render_template("results.html", movies=movies)
+        #####return render_template("results.html", movies=movies)
+        return render_template("results.html", movies=movies, dateFrom=selected_date, dateTo=selected_date2)
 
 def get_channel_name(href_str):
         

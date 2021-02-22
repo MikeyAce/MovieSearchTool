@@ -20,8 +20,8 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdn.rawgit.com/dubrox/Multiple-Dates-Picker-for-jQuery-UI/master/jquery-ui.multidatespicker.js"></script>
     <!-- END MULTIPICKER-->
-    <script src="/static/js/movies.js"></script>
-    <script>
+    <!-- <script src="/static/js/movies.js"></script> -->
+    <!--<script>
         //$('#mdp-demo').multiDatesPicker({
     //numberOfMonths: [1, 2],
     //altField: '#altField',
@@ -30,7 +30,7 @@
     //  $('#selected_date').val($('#mdp-demo').multiDatesPicker('getDates').length);
    // }
   //});
-    </script>
+    </script> -->
     {% endblock %}
 </head>
 <body>
@@ -38,19 +38,21 @@
         {% block content %}
         <div id="mdp-demo"></div>
         <form action="/tvresult" style="margin-bottom:5px;" method="GET">
-            <label for="date">DATE:</label>
+            <label for="date">FROM:</label>
             <!-- <input type="text" id="selected_date" name="selected_date"> -->
             <input type="text" id="selected_date" name="selected_date">
+            <label for="date">TO:</label>
+            <input type="text" id="selected_date2" name="selected_date2">
     
             <input type="submit" id="etsi" value="SEARCH">
-            <label style="font-size:8px">FOR</label>
+            <!--<label style="font-size:8px">FOR</label>
             <input type="radio" id="days1" name="days" value="1" checked="checked">
             <label style="font-size:7px" for="days1">1</label>
             <input type="radio" id="days2" name="days" value="2">
             <label style="font-size:7px" for="days2">2</label> 
             <input type="radio" id="days3" name="days" value="3">
             <label style="font-size:7px" for="days3">3</label>
-            <label style="font-size:8px">DAYS</label>
+            <label style="font-size:8px">DAYS</label> -->
             
             <label for="genre">GENRE:</label>
             <select name="genre" id="genre">
@@ -69,28 +71,34 @@
         </form>
     </div>
     <div id="app"></div>
-    {% endblock %} 
-    <!--<script>$('#mdp-demo').multiDatesPicker({
-        numberOfMonths: [1, 2],
-        altField: '#altField',
-        minDate: 2,
-        onSelect: function(){
-          $('#selected_date').val($('#mdp-demo').multiDatesPicker('getDates').length);
-        }
-      });</script> -->
     <script>
-      console.log("SAATIINKO TODAY")
-      console.log('{{todayFormatted}}')
       //$('input[id$=selected_date]')[0].value=movieData[0].showdate;
-      $('input[id$=selected_date]')[0].value='{{todayFormatted}}'
-    // TOIMIVA, VAIN FORMAT VOIS OLLA PAREMPI:    
-    //$( function() {
-     //   $( "#selected_date").datepicker();
-     // } );
-     $(document).ready(function () {
-        $('input[id$=selected_date]').datepicker({
-        dateFormat: 'dd.mm.yy'
+      $('input[id$=selected_date]')[0].value='{{dateFrom}}'
+      $('input[id$=selected_date2]')[0].value='{{dateTo}}'
+
+    $(document).ready(function() {
+      $("#selected_date").datepicker({
+        dateFormat: 'dd.mm.yy',
+        onSelect: function() {
+        //- get date from another datepicker without language dependencies
+          var minDate = $('#selected_date').datepicker('getDate');
+          $("#selected_date2").datepicker("change", { minDate: minDate });
+        }
+      });
+
+      $("#selected_date2").datepicker({
+        dateFormat: 'dd.mm.yy',
+        onSelect: function() {
+          //- get date from another datepicker without language dependencies
+          var minDate = $('#selected_date').datepicker('getDate');
+          $("#selected_date2").datepicker("change", { minDate: minDate });
+        }
     });
-    });
-    </script>   
+    // SET MINIMUM DATE FOR "TO" ->
+    var minDate = $('#selected_date').datepicker('getDate');
+    $("#selected_date2").datepicker("change", { minDate: minDate });
+});
+</script>
+{% endblock %}
+
 </body>
