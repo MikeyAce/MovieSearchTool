@@ -1,40 +1,63 @@
 from flask import Flask, render_template, flash, request
 import requests, json, time, datetime
-from pony.orm import *
 from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
+# Alchemy alla
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, ForeignKey
+from sqlalchemy.orm import sessionmaker, relationship
 
 app = Flask(__name__)
 load_dotenv()
+
+Base = declarative_base()
+
+## Database classes 
+
+class Movie(Base):
+  
+    __tablename__ = 'movies'
+
+    id = Column(Integer, primary_key=True)
+    imdb_id = Column(String(50))
+    name = Column(String(255))
+    fi_name = Column(String(255))
+    reviews = relationship("Review")	
+    
+    def __repr__(self):
+        return "<Movie (name='%s', fi_name='%s', imdb_id='%s')>" % (self.name, self.fi_name, self.imdb_id)
+
+class Review(Base):
+  
+    __tablename__ = 'reviews'
+
+    id = Column(Integer, primary_key=True)
+    reviewer = Column(String(20))
+    review_txt = Column(String(255))
+    timestamp = Column(DateTime, default=datetime.datetime.now())
+    movie_id = Column(Integer, ForeignKey('movies.id'))
+    
+    def __repr__(self):
+        return "<Review (reviewer='%s', review_txt='%s', timestamp='%s')>" % (self.reviewer, self.review_txt, self.timestamp)
+
+# Config vars and session
 API_KEY = os.environ['API_KEY']
-db = Database()
+DATABASE_URL = os.environ['DATABASE_URL']
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
 
-# Database classes
+Base.metadata.create_all(engine)
+""" Create tables """
 
-class Movie(db.Entity):
-    movie_id = PrimaryKey(int, auto=True)
-    imdb_id = Required(str, index=True)
-    name = Required(str)
-    fi_name = Required(str)
-    year = Required(int)
-    reviews = Set('Review')
+# Method for returning session:
+def __get_session():
+    return Session()
 
-class Review(db.Entity):
-    review_id = PrimaryKey(int, auto=True)
-    reviewer = Required(str) 
-    review_txt = Required(str)
-    timestamp = Required(datetime.datetime,default=datetime.datetime.now())
-    movie = Required(Movie, column='movie_id')
-
-db.bind(provider='sqlite', filename='mdb.sqlite', create_db=True)
-db.generate_mapping(create_tables=True)
-
-@db_session
 def find_reviews(imdb_id):
         
         """ Find reviews for this movie from database, if there are any """
-        film = Movie.get(imdb_id=imdb_id)
+        film = __get_session().query(Movie).filter_by(imdb_id=imdb_id).first()
         reviews = []
 
         if film:
@@ -45,31 +68,74 @@ def find_reviews(imdb_id):
                 
         return reviews
 
-@db_session
-def save_movie(name, fi_name, imdb_id, year, reviewer, review_txt, timestamp):
+def save_movie_and_review(name, fi_name, imdb_id, reviewer, review):
         
         """ Save review of this movie to database """
-        movie_rec = Movie.get(imdb_id=imdb_id)
-        
+        db = __get_session()
+        movie_rec = db.query(Movie).filter_by(imdb_id=imdb_id).first()
+
         if not movie_rec:
 
-                movie_rec = Movie(name=name,
-                             imdb_id=imdb_id,
-                             year=int(year),
-                             fi_name=fi_name)
+            movie_rec = Movie(name=name,
+                    imdb_id=imdb_id,
+                    fi_name=fi_name)
+
+            db.add(movie_rec)
+            db.commit()
+
+        movie_id = movie_rec.id
+
+        review_rec = Review(reviewer=reviewer,
+                    review_txt=review,
+                    timestamp=datetime.datetime.now(),
+                    movie_id=movie_id)
+
+        db.add(review_rec)
+        db.commit()
+        review_id = review_rec.id
+        db.close()
+
+        return review_id
+
+def save_movie(name, fi_name, imdb_id):
         
-                review_rec = Review(reviewer=reviewer,
+        """ Save this movie to database """
+        
+                #movie_rec = Movie(name=name,
+                #             imdb_id=imdb_id,
+                #             year=int(year),
+                #             fi_name=fi_name)
+
+        movie_rec = Movie(name=name,
+                    imdb_id=imdb_id,
+                    #year=int(year),
+                    fi_name=fi_name)
+
+        db = __get_session()
+        db.add(movie_rec)
+        db.commit()
+        #id = movie_rec.id
+        db.close()
+
+        return movie_rec            
+
+def save_review(movie_id, reviewer, review_txt):
+        
+        """ Save this review to database """
+
+        review_rec = Review(reviewer=reviewer,
                             review_txt=review_txt,
                             timestamp=datetime.datetime.now(),
-                            movie=movie_rec)
-        else:
+                            movie_id=movie_id)
+                            #movie=movie_rec)
 
-            review_rec = Review(reviewer=reviewer,
-            review_txt=review_txt,
-            timestamp=datetime.datetime.now(),
-            movie=movie_rec)
-        
-        return commit()
+        db = __get_session()
+        db.add(review_rec)
+        db.commit()
+        print("ARVIO IN TIETOKANTA!")
+        #id = review_rec.id
+        db.close()
+        return review_rec            
 
 def find_movie_from_api(imdb_id):
         
@@ -85,7 +151,7 @@ def index():
         ##return render_template('index.html')
         todayFormatted = datetime.datetime.today().strftime('%d.%m.%Y')
         #return render_template('index3.html',todayFormatted=todayFormatted)
-        return render_template('index.html',dateFrom=todayFormatted, dateTo=todayFormatted)
+        return render_template('index3.html',dateFrom=todayFormatted, dateTo=todayFormatted)
 
 @app.route('/submit_review', methods=['POST'])
 def submit_review():
@@ -99,10 +165,13 @@ def submit_review():
         imdb_id = request.form.get('imdb_id')
         year = request.form.get('year')
         timestamp = request.form.get('timestamp')
- 
-        save_movie(name, fi_name, imdb_id, year, reviewer, review, timestamp)
 
-        return "Thank you. Your review was saved!"            
+        # Save review and movie first, if no record yet
+        review_id = save_movie_and_review(name, fi_name, imdb_id, reviewer, review)
+        if review_id:
+            return "Thank you, " + reviewer + ". Your review was saved!"
+        else:
+            return "Something went wrong!"            
 
 @app.route('/tvresult', methods=['GET', 'POST'])
 def tvresult():
@@ -112,7 +181,6 @@ def tvresult():
         selected_date2 = request.args.get('selected_date2')
         actor = request.args.get('actor')
         genre = request.args.get('genre')
-        ##days = request.args.get('days')
         
         if not selected_date:
             selectedDateFormatted = datetime.datetime.today().strftime('%Y-%m-%d')
@@ -124,7 +192,6 @@ def tvresult():
             
         dates = set()
         dates.add(selectedDateFormatted)
-        #dates.add(selected_date)
 
         """ Collect dates for searching """
 
@@ -149,7 +216,6 @@ def tvresult():
 
             page = requests.get(searchUrl)
             soup = BeautifulSoup(page.content, 'html.parser')
-
             programs = soup.find_all('li')
 
             """ Loop through tv programs data for current date """
@@ -168,10 +234,13 @@ def tvresult():
     
                 imdb_link = imdb_link_cl.get('href')
                 showdatetime = y.find('time').get("datetime")
+                
                 (sdate_tmp, stime_tmp) = showdatetime.split("T")
                 showdate = sdate_tmp[8:10] + "." + sdate_tmp[5:7] + "." + sdate_tmp[0:4]
 
-                if showdate > selected_date2:
+                showdate_obj = datetime.datetime.strptime(showdate, '%d.%m.%Y')
+
+                if showdate_obj > selectedDate2:
                     continue
 
                 showtime = stime_tmp[0:5]
@@ -208,9 +277,7 @@ def tvresult():
                 if film not in movies:
                     movies.append(film)
 
-        #return render_template("results.html", movies=movies)
-        #####return render_template("results.html", movies=movies)
-        return render_template("results.html", movies=movies, dateFrom=selected_date, dateTo=selected_date2)
+        return render_template("results3.html", movies=movies, dateFrom=selected_date, dateTo=selected_date2)
 
 def get_channel_name(href_str):
         

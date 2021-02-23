@@ -9,28 +9,12 @@
     
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <!-- Datepickeriä varten nämä kaksi
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
-
-    <!-- MULTIPICKER... TUO EKA RIVI, SIITÄ YLEMPÄNÄ UUDEMPI VERSIO... -->
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> -->
+    <!-- Datepicker scripts, remove what is unnecessary -->
     <link href="https://code.jquery.com/ui/1.12.1/themes/pepper-grinder/jquery-ui.css" rel="stylesheet" />
     <link href="https://cdn.rawgit.com/dubrox/Multiple-Dates-Picker-for-jQuery-UI/master/jquery-ui.multidatespicker.css" rel="stylesheet" />
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdn.rawgit.com/dubrox/Multiple-Dates-Picker-for-jQuery-UI/master/jquery-ui.multidatespicker.js"></script>
-    <!-- END MULTIPICKER-->
-    <!-- <script src="/static/js/movies.js"></script> -->
-    <!--<script>
-        //$('#mdp-demo').multiDatesPicker({
-    //numberOfMonths: [1, 2],
-    //altField: '#altField',
-    //minDate: 2,
-    //onSelect: function(){
-    //  $('#selected_date').val($('#mdp-demo').multiDatesPicker('getDates').length);
-   // }
-  //});
-    </script> -->
+    
     {% endblock %}
 </head>
 <body>
@@ -45,14 +29,6 @@
             <input type="text" id="selected_date2" name="selected_date2">
     
             <input type="submit" id="etsi" value="SEARCH">
-            <!--<label style="font-size:8px">FOR</label>
-            <input type="radio" id="days1" name="days" value="1" checked="checked">
-            <label style="font-size:7px" for="days1">1</label>
-            <input type="radio" id="days2" name="days" value="2">
-            <label style="font-size:7px" for="days2">2</label> 
-            <input type="radio" id="days3" name="days" value="3">
-            <label style="font-size:7px" for="days3">3</label>
-            <label style="font-size:8px">DAYS</label> -->
             
             <label for="genre">GENRE:</label>
             <select name="genre" id="genre">

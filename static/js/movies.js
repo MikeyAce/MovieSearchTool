@@ -50,9 +50,12 @@ var imdbStr = "https://www.imdb.com/title/"
 
 // Sort data by date and time.
 movieData.sort((a, b) => {
-	if (a.showdate+a.showtime < b.showdate+b.showtime) return -1
+	a_str = a.showdate.slice(6, 10) + a.showdate.slice(3, 5) + a.showdate.slice(0, 2);
+	b_str = b.showdate.slice(6, 10) + b.showdate.slice(3, 5) + b.showdate.slice(0, 2);
+	if (a_str+a.showtime < b_str+b.showtime) return -1
 	return a.showdate > b.showdate ? 1 : 0
 })
+
 // Loop through received data
 for (i = 0; i < movieData.length; i++) 
 {		
