@@ -6,8 +6,6 @@
 {{ super() }}
 
 <script>
-	// TÄSSÄ NYT PITÄÄ MÄÄRITELLÄ MOVIEDATA, ENNEN KUIN VOIN 
-	// KÄYTTÄÄ ULKOISESSA JS-TIEDOSTOSSA..
 	var movieData = JSON.parse('{{ movies | tojson | safe}}');
 </script>
 <script src="/static/js/movies.js"></script>	

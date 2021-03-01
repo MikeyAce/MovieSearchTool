@@ -3,7 +3,7 @@ import requests, json, time, datetime
 from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
-# Alchemy alla
+# Swithched from Pony to SQLAlchemy:
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
@@ -96,47 +96,7 @@ def save_movie_and_review(name, fi_name, imdb_id, reviewer, review):
         db.close()
 
         return review_id
-
-def save_movie(name, fi_name, imdb_id):
-        
-        """ Save this movie to database """
-        
-                #movie_rec = Movie(name=name,
-                #             imdb_id=imdb_id,
-                #             year=int(year),
-                #             fi_name=fi_name)
-
-        movie_rec = Movie(name=name,
-                    imdb_id=imdb_id,
-                    #year=int(year),
-                    fi_name=fi_name)
-
-        db = __get_session()
-        db.add(movie_rec)
-        db.commit()
-        #id = movie_rec.id
-        db.close()
-
-        return movie_rec            
-
-def save_review(movie_id, reviewer, review_txt):
-        
-        """ Save this review to database """
-
-        review_rec = Review(reviewer=reviewer,
-                            review_txt=review_txt,
-                            timestamp=datetime.datetime.now(),
-                            movie_id=movie_id)
-                            #movie=movie_rec)
-
-        db = __get_session()
-        db.add(review_rec)
-        db.commit()
-        print("ARVIO IN TIETOKANTA!")
-        #id = review_rec.id
-        db.close()
-        return review_rec            
-
+         
 def find_movie_from_api(imdb_id):
         
         """ Fetch movie data in json format by imbd from omdbapi  """
@@ -148,10 +108,8 @@ def find_movie_from_api(imdb_id):
 
 @app.route('/')
 def index():
-        ##return render_template('index.html')
         todayFormatted = datetime.datetime.today().strftime('%d.%m.%Y')
-        #return render_template('index3.html',todayFormatted=todayFormatted)
-        return render_template('index3.html',dateFrom=todayFormatted, dateTo=todayFormatted)
+        return render_template('index.html',dateFrom=todayFormatted, dateTo=todayFormatted)
 
 @app.route('/submit_review', methods=['POST'])
 def submit_review():
@@ -181,7 +139,7 @@ def tvresult():
         selected_date2 = request.args.get('selected_date2')
         actor = request.args.get('actor')
         genre = request.args.get('genre')
-        
+
         if not selected_date:
             selectedDateFormatted = datetime.datetime.today().strftime('%Y-%m-%d')
         else:
@@ -230,8 +188,9 @@ def tvresult():
                 movie_title = y.get("title")    
         
                 if movie_title is None:
-                    continue     
-    
+                    continue         
+
+                print(movie_title)
                 imdb_link = imdb_link_cl.get('href')
                 showdatetime = y.find('time').get("datetime")
                 
@@ -254,30 +213,42 @@ def tvresult():
         
                 movie_data = find_movie_from_api(imdb_id)
             
-                if actor:
-                    actors = movie_data['Actors']
-                    if not actor in actors:
-                        continue
+                if actor and not actor in movie_data['Actors']:
+                    continue
   
                 if not genre is None and not "Any" in genre:
                     genres = movie_data['Genre']
                     if not genre in genres:
                         continue
 
+                img = movie_data['Poster']
+                if len(img) < 5:
+                    img = find_poster_from_imdb(imdb_id)
+                    
                 reviews = find_reviews(imdb_id)
-            
+                plot = movie_data['Plot'].replace('"','\\"')
+
                 film = {"showtime": showtime, "fi_name": movie_title, "reviews": reviews,
                         "channel": channel, "showdate": showdate, "imdb_id": imdb_id,
-                        "img": movie_data['Poster'], "name": movie_data['Title'],
+                        "img": img, "name": movie_data['Title'],
                         "year": movie_data['Year'], "country": movie_data['Country'],
                         "director": movie_data['Director'], "actors": movie_data['Actors'],
                         "genre": movie_data['Genre'], "rated": movie_data['Rated'],
-                        "runtime": movie_data['Runtime']}
+                        "runtime": movie_data['Runtime'],"plot": plot}
                 
                 if film not in movies:
                     movies.append(film)
 
-        return render_template("results3.html", movies=movies, dateFrom=selected_date, dateTo=selected_date2)
+        return render_template("results.html", movies=movies, dateFrom=selected_date, dateTo=selected_date2)
+
+def find_poster_from_imdb(imdb_id):
+
+        imdbUrl = "https://www.imdb.com/title/" + imdb_id
+        imdbPage = requests.get(imdbUrl)
+        soup = BeautifulSoup(imdbPage.content, 'html.parser')
+        posterData = soup.find_all(class_="poster")
+        posterSource = posterData[0].find('img').get("src")
+        return posterSource
 
 def get_channel_name(href_str):
         

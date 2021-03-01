@@ -19,7 +19,7 @@ $(document).ready(function(){
 				   year: movie_year,timestamp: ts},
 			 dataType: "text",
 			 success: function(result){
-					   // TYHJENNÄ KIRJOITETTU ARVIO JA ARVIOIJAN NIMI!!
+					   // Clear review and reviewer's name on the form
 					   var reviewPage = $('#' + imdb_tt + 'Comment')[0];
 					   reviewPage.children.review_txt.value = "";
 					   reviewPage.children.reviewer.value = "";
@@ -42,13 +42,14 @@ $(document).ready(function(){
 		   });
 	   });
 });
-// Data received, construct HTML page
+
+// Data received, build HTML page
 
 var dateStr = "";
 var htmlStr = "";
 var imdbStr = "https://www.imdb.com/title/"
 
-// Sort data by date and time.
+// Sort data by showdate & time
 movieData.sort((a, b) => {
 	a_str = a.showdate.slice(6, 10) + a.showdate.slice(3, 5) + a.showdate.slice(0, 2);
 	b_str = b.showdate.slice(6, 10) + b.showdate.slice(3, 5) + b.showdate.slice(0, 2);
@@ -56,59 +57,52 @@ movieData.sort((a, b) => {
 	return a.showdate > b.showdate ? 1 : 0
 })
 
-// Loop through received data
+// Loop through data. First create container for everything.
+
+console.log(movieData.length);
+
+if (movieData.length < 1) {
+	htmlStr += "<p>No results.</p>";
+}
+
 for (i = 0; i < movieData.length; i++) 
-{		
-	// NYT TARKISTUS, ONKO LAJITYYPPI / OHJAAJA / MUU MITÄ HAETTIIN...
+{
 	if (movieData[i].showdate != dateStr)
 	{
 		// If next movie's showdate is different, close previous day's div
-		// and print next date
+		// and present next date
 		if (i > 0) { htmlStr += "</div>" };
 	
 		htmlStr += '<h2 style="text-align: center;">' + movieData[i].showdate + "</h2>";
 		dateStr = movieData[i].showdate;
-				
-		// Luo container class diveille
 		
+		// Display three movies (or less) on each row
 		htmlStr += '<div class="row">';
 	}
 
-	// NYT SITTEN TEE DIV JOKAISELLE TÄMÄN PÄIVÄN FILMILLE!
-
+	/* Create column for a movie. Within column, toprow contains poster (left),
+	director and cast (right).	*/
 	htmlStr += '<div class="column" style="background-color:#898bed;">';
 	htmlStr += '<div class="toprow">';
-		
-	// ALOITA TOP_LEFT
-    // TEE KUVASTA LINKKI IMDb:hen!!!
+	
 	htmlStr += '<div class="topleft">';
     htmlStr += '<a href=' + imdbStr + movieData[i].imdb_id + ' target="_blank">';
     htmlStr += '<img src="' + movieData[i].img + ' alt=""></a>';
-
-	htmlStr += "</div>" /* Suljetaan topleft */
-
-	// ALOITA TOP_RIGHT	--->
+	htmlStr += "</div>" // Close topleft
+	
 	htmlStr += '<div class="topright">';
-
 	htmlStr += "<b>" + movieData[i].name + " (" + movieData[i].year + ")</b><br>";
 	htmlStr += 'Directed by: ' + movieData[i].director + "<br>";
 	htmlStr += "Starring: " + movieData[i].actors;
-
-	// KOKEILLAAN ARVION LISÄÄMISTÄ SIVULLE ERILLISELLÄ NAPILLA...
-
-	htmlStr += "</div>"; // SULJE TOP_RIGHT
+	htmlStr += "</div>"; // Close topright
 		
-	// SULJE TOPROW!
-	htmlStr += "</div>";
+	htmlStr += "</div>"; // Close toprow
 	
-	// ALOITA MIDDLEROW, JONKA SISÄÄN KAKSI DIVIÄ:
-	// NYT ALOITETAANKIN TAB!!
-	// LAITETAAN ID PÄÄDIVILLE, KOSKA NÄITÄ TULEE USEAMPI
+	/* Create tab for movie, and buttons (tablinks) for tab content page selection. 
+	Include imbd id for identification. There are three content pages for tab: 
+	1) Info 2) Comment (write review) 3) Reviews */
+	
 	htmlStr += '<div id=' + movieData[i].imdb_id + ' class="tab">';
-
-	/* Create buttons for tab selection. Include imbd id for identification. 
-	There are three tabs: 1) Info 2) Comment (write review) 3) Reviews */	
-
 	htmlStr += '<button style="display:block" className = "active" class="tablinks" onclick="openPage(event,'; 
 	htmlStr += "'Info'" + ",'";
 	htmlStr += movieData[i].imdb_id + "'" + ')">Info</button>';
@@ -121,36 +115,21 @@ for (i = 0; i < movieData.length; i++)
 	htmlStr += "'Reviews'" + ",'";
 	htmlStr += movieData[i].imdb_id + "'" + ')">Reviews</button>';
 
-	// <<=============== ENSIMMÄINEN TAB ========================>>
-
-	// Create tab contents accordingly
-
 	htmlStr += "<div id=";
-
-	// Set selection on Info tab
+	// Set selection on Info page and add contents
 	htmlStr += movieData[i].imdb_id + "Info" + ' class="tabcontent" style="display:block">';	
-
 	htmlStr += "<br>";
-	htmlStr += "<b>" + movieData[i].channel + " " + movieData[i].showtime + "</b>";
-	htmlStr += " (" + movieData[i].runtime + ")";
-	htmlStr += "<hr>";
+	htmlStr += '<p><b>' + movieData[i].channel + " " + movieData[i].showtime + "</b>";
+	htmlStr += " (" + movieData[i].runtime + ")</p>";
+	htmlStr += '<p>' + movieData[i].plot + "</p>"
+    
+    htmlStr += "</div>"; // Close Info page div
 
-    htmlStr += "<p><b>" + "Country: </b>" + movieData[i].country + "<br>";
-	htmlStr += "<b>Genre: </b>" + movieData[i].genre + "<br>";
-    htmlStr += "<b>Rated: </b>" + movieData[i].rated + "</p>"; 
-
-    htmlStr += "</div>"; // SULJETAAN SISÄLTÖTAB
-
-	// <<=============== TOINEN TAB ========================>>
-
-	// Create second tab for movie. Includes a review form with submit button.
-	// Use imdb id for identification
+	/*  Create second content page for movie. Contains a review form with submit button.
+	Use imdb id for identification. Hidden fields used to store information for the review */
 
 	htmlStr += "<div id=";
 	htmlStr += movieData[i].imdb_id + "Comment" + ' class="tabcontent">';
-		
-	// Hidden fields used to store information for saving the review
-
 	htmlStr += '<input type="hidden" id="imdb_id" name="imdb_id"'; 
     htmlStr += 'value = "' + movieData[i].imdb_id + '"></input>';
     htmlStr += '<input type="hidden" id="name" name="name"';
@@ -162,26 +141,19 @@ for (i = 0; i < movieData.length; i++)
 
 	// Create input field for name, text area for review, and a submit button  
     
-    htmlStr+="<br>"
-    htmlStr += 'Name: <input style="background-color: #c2c8fc;" type="text" id="reviewer" maxlength="20" size="20" name="reviewer" placeholder = "Your name..." required>';
-	htmlStr += '<textarea class="reviews" id="review_txt" name="review_txt" rows="3"';
-	htmlStr += 'cols = "35" placeholder = "Your review..." required></textarea><br>';
-    htmlStr += '<button style="border: 1px solid grey;background-color: #c2c8fc;" class="review_button" id="but" value="but" name="but">Submit</button>';
-    
-	htmlStr += "</div>"; // SULJETAAN SISÄLTÖTAB	
+	htmlStr += '<input style="background-color: #c2c8fc; width:100%" type="text" id="reviewer" name="reviewer" placeholder = "Your name..." required>';
+	htmlStr += '<textarea style="background-color: #c2c8fc; width:100%; height:50%" class="textinput" placeholder="Comment"></textarea>';
+	htmlStr += '<button style="border: 1px solid grey;background-color: #c2c8fc;" class="review_button" id="but" value="but" name="but">Submit</button>';
+	htmlStr += "</div>"; // Close Comment page div	
 
-	// <<=============== KOLMAS TAB ========================>>
+	/*  Create third content page, for reviews about the movie.
+	Sort movie's reviews. Most recent is displayed first. */
 
     htmlStr += "<div " + 'style="font-size:0.8vw;overflow:scroll;"' + " id=";
-
 	htmlStr += movieData[i].imdb_id + "Reviews" + ' class="tabcontent">';
-
-    // Sort movie's reviews. Most recent is displayed first.    
-
+     
     var reviewsTmp = movieData[i].reviews;
-    var reviews = reviewsTmp.sort(SortByDate)    
-
-    // LAJITTELU TEHTY
+    var reviews = reviewsTmp.sort(SortByDate)
 
     for (r = 0; r < reviews.length; r++){
 		htmlStr += "<br>";	
@@ -192,20 +164,19 @@ for (i = 0; i < movieData.length; i++)
 		htmlStr += "</div>"; 
 	}
 
-	htmlStr += "</div>"; // SULJETAAN SISÄLTÖTAB
-	htmlStr += "</div>" // Suljetaan tab class!
-
-	// SITTEN MÄÄRITELLÄÄN SISÄLLÖT ----------->
-	// NÄMÄ NYT PITÄS SAADA SINNE SISÄÄN...
-
-	htmlStr += '</div>'; // COLUMN KIINNI KOKEEKSI TÄSSÄ, TÄMÄ OLI ALEMPANA KYL...
+	htmlStr += "</div>"; // Close Reviews page div.
+	htmlStr += "</div>" // Close tab div
+	htmlStr += '</div>'; // Close column div
 		
 }
+// Close container div
+htmlStr += '</div>';
+
 // Set constructed HTML string as page content	
 var el = document.querySelector("#app");
 el.innerHTML = htmlStr;
 
-// Nyt vielä aseta kaikille Ensimmäinen tablin valituksi?!
+// Set info tab as default selection for every movie
 tl = document.getElementsByClassName("tablinks");
 for (i = 0; i < tl.length; i++) {
     if (tl[i].innerText == "Info") {
@@ -216,21 +187,17 @@ function SortByDate(a, b){
     var aD = new Date(a.timestamp).getTime(), bD = new Date(b.timestamp).getTime(); 
     return ((aD > bD) ? -1 : ((aD < bD) ? 1 : 0));
 }
-
 function openPage(evt, pageName, imdbId) {
 	var i, tabcontent, tablinks;
 	var imdbIdPageName = imdbId + pageName;
 	tabcontent = document.getElementsByClassName("tabcontent");
-	// NYT LUUPATAAN NE CONTENTIT, JOIDEN PARENTIN ID OIKEA...
 	for (i = 0; i < tabcontent.length; i++) {
 		if (tabcontent[i].parentNode.id == imdbId) {
 			tabcontent[i].style.display = "none";
 		}  	  
 	}
-	// JA NYT TABLINKSIT SAMALLA PERIAATTEELLA...
 	tablinks = document.getElementsByClassName("tablinks");
 	for (i = 0; i < tablinks.length; i++) {
-		//if (tabcontent[i].parentNode.id == imdbId) {
             if (tablinks[i].parentNode.id == imdbId) {
 			tablinks[i].className = tablinks[i].className.replace(" active", "");
 		}

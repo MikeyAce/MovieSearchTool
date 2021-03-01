@@ -1,3 +1,6 @@
+* {
+  box-sizing: border-box;
+}
 body {
   margin-left: 30px;
   margin-right: 30px;
@@ -5,8 +8,47 @@ body {
 h2 {
   font-family: Arial, Helvetica, sans-serif;
 }
-form {
+.topnav {
+  overflow: hidden;
   background-color: lightblue;
+}
+.form-inline {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  background-color: lightblue;
+}
+.form-inline input {
+  vertical-align: middle;
+  margin: 5px 10px 5px 0;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+}
+.form-inline button {
+  padding: 10px 20px;
+  background-color: dodgerblue;
+  border: 1px solid #ddd;
+  color: white;
+  cursor: pointer;
+  border-radius: 10px;
+}
+.form-inline button:hover {
+  background-color: royalblue;
+}
+/*.form-inline select {
+  padding: 10px 20px;
+  background-color: dodgerblue;
+  border: 1px solid #ddd;
+  color: white;
+  cursor: pointer;
+} */
+.form-inline select {
+  padding: 10px 20px;
+  background-color: rgb(245, 246, 247);
+  border: 1px solid #ddd;
+  color: rgb(38, 14, 146);
+  cursor: pointer;
 }
 .ui-datepicker .ui-datepicker-header {
   background: rgb(240, 239, 241) !important;
@@ -15,9 +57,6 @@ form {
 .ui-datepicker table {
   width: 100%;
   background: rgb(84, 64, 122) !important;
-}
-* {
-  box-sizing: border-box;
 }
 img {
   max-width: 100%;
@@ -31,11 +70,11 @@ img {
 }
 .column {
   float: left;
-  width: 28%;
+  width: 25vw;
+  height: 45vh;
   padding: 10px;
   margin: 10px;
   border-radius: 10px;
-  height: 300px; /* Should be removed. Only for demonstration */
 }
 .toprow {
   width: 100%;
@@ -53,11 +92,13 @@ img {
 .topright {
   width: 80%;
   height: 100%;
-  float: right;
+  float: left;
   text-align: left;
-  font-size: 0.8vw;
+  font-size: 1vw;
   border-radius: 10px;
-  overflow-wrap: break-word;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
   background: #8793f8;
 }
 .tab {
@@ -87,15 +128,16 @@ img {
   background-color: #ccc;
 }
 .tabcontent {
-  display: none;
+  /*display: none; */
+  display: block;
   padding: 3px 6px;
   width: 100%; /* KOKEILLAAN W JA H LAITTAA... */
   height: 100%;
   background-color: #ffffff;
   border: 1px solid #ccc;
   border-top: none;
+  font-size: 1vw;
 }
-/* TABIT PÄÄTTYY */
 .reviews {
   border: 0 none #fff;
   background: #c2c8fc;
@@ -112,7 +154,14 @@ img {
   overflow: hidden;
   outline: none;
 }
-/* ARVION SUBMIT... */
+.textinput {
+  float: left;
+  width: 100%;
+  min-height: 20vm;
+  outline: none;
+  resize: none;
+  border: 1px solid grey;
+}
 .review_button {
   background-color: #ec0c0c;
   border: 1px;
@@ -125,4 +174,88 @@ img {
   font-size: 3vw;
   margin: 4px 2px;
   cursor: pointer;
+}
+@media only screen and (max-width: 600px) {
+  /*.container {
+    display: block;
+    width: 100%;
+  } 
+  .row {
+    display: block;
+    width: 100%;
+  }  */
+  /* .col-25,
+  .col-75,
+  input[type="submit"] {
+    width: 100%;
+    margin-top: 0;
+  } */
+  .form-inline input {
+    margin: 10px 0;
+  }
+  .form-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  /* input[type="submit"] {
+    width: 25%;
+    margin-top: 0;
+  } */
+  .container {
+    display: block;
+    width: 100%;
+  }
+  .column {
+    display: block;
+    float: left;
+    width: 100%;
+    height: 100%;
+    /* height: 45vh; */
+
+    /*width: 30vw;
+    height: 30vh; */
+  }
+  .tab button {
+    font-size: 2vw;
+  }
+  .tabcontent {
+    /*display: block; */
+    width: 100%;
+    height: 100%;
+    font-size: 3vw;
+  }
+  .tab {
+    /* display: block; **/
+    width: 100%;
+    /* height: 65%; */
+    height: 30vh;
+  }
+  .topleft {
+    width: 20%;
+    height: 100%;
+    float: left;
+  }
+  .toprow {
+    width: 100%;
+    height: 100%;
+  }
+  .topright {
+    width: 80%;
+    height: 100%;
+    float: right;
+    text-align: left;
+    font-size: 4vw;
+  }
+  img {
+    width: 100%;
+    display: block; /* remove extra space below image */
+  }
+  .col-container {
+    display: block;
+    width: 100%;
+  }
+  .col {
+    display: block;
+    width: 100%;
+  }
 }
