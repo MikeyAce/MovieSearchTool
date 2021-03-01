@@ -4,7 +4,7 @@ My demo application for Code BootCamp 2021. It is a web search engine for upcomi
 
 This application uses following libraries:
 
-- ORM: Pony
+- ORM: SQLAlchemy
 - Flask for web application development
 - Beautiful Soup for pulling data out of HTML pages
 - Pipenv for managing dependencies
@@ -17,7 +17,7 @@ Make sure to create .env file in your project root (see .env_example) which cont
 
 # Database
 
-At the moment the application is only compatible with SQLite databases. If no database file exists, it is created automatically when running application.
+The application communicates with PostgreSQL database, running on Heroku.
 
 # Running application
 
